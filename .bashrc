@@ -43,6 +43,8 @@ shopt -s cdspell
 shopt -s autocd
 # Spelling correction on directory names during word completion if the directory name initially supplied does not exist
 shopt -s dirspell
+# Bash 5+ native alias-aware programmable completion
+shopt -s progcomp_alias 2>/dev/null || true
 # Don't check mail when opening terminal.
 unset MAILCHECK
 
