@@ -221,7 +221,18 @@ fi
 
 # ls - use eza if available
 if command -v eza &>/dev/null; then
-  alias ls='eza -F --icons=auto --hyperlink'
+  unalias ls 2>/dev/null
+  # Use eza for ls with terminal-only hyperlink flag
+  ls() {
+    local -a eza_args
+    eza_args=(-F --icons=auto --color=auto)
+
+    if [[ -t 1 ]]; then
+      eza_args+=(--hyperlink)
+    fi
+
+    command eza "${eza_args[@]}" "$@"
+  }
   alias la='ls -a'
   alias ld='ls -d'
   alias lda='la -d'
@@ -233,6 +244,10 @@ if command -v eza &>/dev/null; then
   alias llta="lla -s=newest"
   alias lld='ll -d'
   alias tree="eza --tree"
+  # Complete the ls wrapper with eza's option set
+  if declare -F _eza &>/dev/null; then
+    complete -o filenames -o bashdefault -F _eza ls
+  fi
 else
   if command ls --color -d . &>/dev/null; then
     alias ls='ls -F --color=auto'
@@ -378,6 +393,10 @@ vc() {
       ;;
   esac
 }
+
+if declare -F _vcsh >/dev/null; then
+  complete -F _vcsh vc
+fi
 
 _mr_divider() {
   perl -pe '
