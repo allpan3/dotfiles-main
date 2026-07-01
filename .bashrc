@@ -8,13 +8,6 @@ case $- in
 *) return ;;
 esac
 
-# Ghostty shell integration for Bash. This should be at the top of your bashrc!
-# Manually sourcing this allows cwd to appear in zellij's pane frame as pane name.
-# This somehow doesn't happen if I just let ghostty automatically turn on shell integration
-if [ -n "${GHOSTTY_RESOURCES_DIR}" ]; then
-  builtin source "${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash"
-fi
-
 # Wezterm shell integration
 # test -e "${HOME}/.config/wezterm/wezterm_shell_integration.sh" && . "${HOME}/.config/wezterm/wezterm_shell_integration.sh"
 

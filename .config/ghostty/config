@@ -21,8 +21,6 @@ macos-non-native-fullscreen = true
 # background-blur = true
 
 ## Functions
-# source shell integratin script manually
-shell-integration = none
 copy-on-select = clipboard
 window-save-state = always
 macos-option-as-alt = true
