@@ -9,7 +9,7 @@
 ##
 ## # Please put the following line in the beginning of .bashrc
 ## # Note: Please replace $HOME/.local/share/blesh with the path to your ble.sh
-## [[ $- == *i* ]] && source "$HOME/.local/share/blesh/ble.sh" --noattach
+## [[ $- == *i* ]] && source -- "$HOME/.local/share/blesh/ble.sh" --attach=none
 ##
 ## # Your bashrc contents should come between the two lines.
 ##
@@ -130,7 +130,10 @@
 
 ## The following option specifies the set of expansions performed by
 ## magic-space with a colon-separated list of expansion types. "history",
-## "sabbrev", "alias", and "autocd" can be specified.
+## "sabbrev", "alias", and "autocd" can be specified.  In addition, a
+## user-defined expansion can be defined as a shell function
+## "ble/complete/expand:<name>" so that "<name>" can be specified to this
+## option.
 
 #bleopt edit_magic_expand=history:sabbrev
 
@@ -145,8 +148,9 @@
 
 ## This option specifies the expansions performed on accept-line by a
 ## colon-separated list.  The expansion is performed in a similar way as Bash's
-## history expansion.  When "sabbrev", "alias", "autocd", and "history" is
-## specified, the respective expansions are attempted on the command line.
+## history expansion.  When "sabbrev", "alias", "autocd", "history", or
+## "<name>" as explained in the description of "bleopt edit_magic_expand" is
+## specified, the corresponding expansion is attempted on the command line.
 ## When "verify" is specified, if sabbrev, alias, or autocd expansions changed
 ## the command line, the execution of the command line is canceled so the user
 ## can examine or continue to edit the expanded line.  The history expansion
@@ -450,7 +454,7 @@
 ##   the support for extended keys when there are more than one ble.sh session
 ##   or when there is at least one foreground ble.sh session in GNU screen.
 
-# bleopt term_modifyOtherKeys_passthrough_kitty_protocol=1
+#bleopt term_modifyOtherKeys_passthrough_kitty_protocol=1
 
 ##-----------------------------------------------------------------------------
 ## Rendering options
@@ -670,14 +674,22 @@ ble-face auto_complete='fg=241,italic' # darker background
 
 
 ## The setting "complete_auto_complete_opts" is a colon-separated list of
-## options:
-##
-## - The option "suppress-after-complete" controls whether auto-complete is
-##   enabled after TAB completions.  If "suppress-after-complete" is included,
-##   auto-complete is enabled after TAB completions.  Otherwise, auto-complete
-##   is disabled after TAB completions.
+## options.  When the option "history-disabled" is specified, the auto-complete
+## source based on history is disabled.  When "suppress-after-complete" is
+## included, auto-complete is disabled after TAB completions.  When
+## "suppress-inside-line" is included, auto-complete is disabled when the
+## character at the current cursor position, if any, is not a newline.  When
+## "suppress-inside-word" is included, auto-complete is disabled when the
+## character at the current cursor position, if any, is not included in the
+## default COMP_WORDBREAKS.  When the option "syntax-disabled" is specified,
+## the auto-complete source based on the syntax and programmable completion is
+## disabled.  When "syntax-suppress-ambiguous" is specified, ambiguous
+## completion is not attempted.  When "syntax-suppress-empty" is specified,
+## syntax-based completion is suppressed for an empty word.  When the option
+## "syntax-unique" is specified, the auto-complete source based on the syntax
+## and programmable completion generates a candidate only when it is unique.
 
-#bleopt complete_auto_complete_opts=suppress-after-complete
+#bleopt complete_auto_complete_opts=
 
 
 ## The faces "menu_filter_fixed" and "menu_filter_input" can be used to specify
@@ -694,7 +706,8 @@ ble-face auto_complete='fg=241,italic' # darker background
 ## automatically show the menu of completions after the idle time (for which
 ## user input does not arrive) reaches the delay.
 
-# bleopt complete_auto_menu=500
+#bleopt complete_auto_menu=500
+
 
 ## When there are user inputs while generating completion candidates, the
 ## candidates generation will be canceled to process the user inputs. The
@@ -764,7 +777,7 @@ ble-face auto_complete='fg=241,italic' # darker background
 ## and additionally, the completion menu is hidden by default.  The default is
 ## "insert-selection".
 
-bleopt complete_menu_complete_opts=
+#bleopt complete_menu_complete_opts=insert-selection
 
 
 ## When a non-empty value is specified to this setting, the highlighting of the
@@ -1058,9 +1071,9 @@ ble-face -s filename_warning          fg=red
 
 ## If you want to search the already input string using <up> and <down> keys,
 ## use the following setting:
-# I use ctrl-n/p for cycling history so this may be useful
-# ble-bind -f up 'history-search-backward'
-# ble-bind -f down 'history-search-forward'
+
+#ble-bind -f up 'history-search-backward'
+#ble-bind -f down 'history-search-forward'
 
 
 ## If you want to immediately run the matched command by RET, you can specify
@@ -1082,13 +1095,14 @@ ble-face -s filename_warning          fg=red
 
 # # For emacs editing mode
 # ble-bind -m emacs -f 'C-m' 'accept-line'
-# ble-bind -m emacs -f 'C-RET' 'accept-line'
+# ble-bind -m emacs -f 'RET' 'accept-line'
 
 # # For vim editing mode
 # ble-bind -m vi_imap -f 'C-m' 'accept-line'
 # ble-bind -m vi_imap -f 'RET' 'accept-line'
 # ble-bind -m vi_nmap -f 'C-m' 'accept-line'
 # ble-bind -m vi_nmap -f 'RET' 'accept-line'
+
 
 ## If you want to accept the suggestion by auto-complete using TAB, please use
 ## the following keybindings.  By default, <right> key can be used to accept
@@ -1097,7 +1111,6 @@ ble-face -s filename_warning          fg=red
 
 # ble-bind -m auto_complete -f C-i auto_complete/insert
 # ble-bind -m auto_complete -f TAB auto_complete/insert
-
 
 ##-----------------------------------------------------------------------------
 ## Settings for Emacs mode
@@ -1132,12 +1145,6 @@ function blerc/emacs-load-hook {
   #ble-bind -f 'RET' accept-line
 
 
-  ## Workaround for multiline accept in zellij:
-  ## In zellij, ctrl-j is reserved, C-enter, S-enter both get mapped to C-m
-  ## Only option is M-enter, which is mapped to C-M-m. Default is newline, but not useful
-  ble-bind -m emacs -f 'C-M-m' 'accept-line'   # this is needed to work inside zellij
-  ble-bind -m emacs -f 'M-RET' 'accept-line' # this is needed to work outside of zellij
-
   ## With the following settings, M-backspace (whose actual key sequence
   ## depends on your terminal) will kill the backward word as in the default
   ## readline.
@@ -1150,6 +1157,10 @@ function blerc/emacs-load-hook {
   ## The following settings allows select to beginning/end of line with shift
   ble-bind -f 's-S-left'  '@marked beginning-of-line'
   ble-bind -f 's-S-right' '@marked end-of-line'
+
+  ## Navigate command hitory
+  ble-bind -f 'C-p' 'history-prev'
+  ble-bind -f 'C-n' 'history-next'
 
   return 0
 }
@@ -1224,7 +1235,7 @@ function blerc/vim-load-hook {
   ## readline.
 
   #ble-bind -m vi_imap -f 'M-C-?' kill-backward-cword
-  # ble-bind -m vi_imap -f 'M-DEL' kill-backward-cword
+  #ble-bind -m vi_imap -f 'M-DEL' kill-backward-cword
   #ble-bind -m vi_imap -f 'M-C-h' kill-backward-cword
   #ble-bind -m vi_imap -f 'M-BS'  kill-backward-cword
 
@@ -1239,14 +1250,6 @@ function blerc/vim-load-hook {
   #ble-bind -m vi_imap -f 'RET' accept-line
   #ble-bind -m vi_nmap -f 'C-m' accept-line
   #ble-bind -m vi_nmap -f 'RET' accept-line
-
-  ## Workaround for multiline accept in zellij:
-  ## In zellij, ctrl-j is reserved, C-enter, S-enter both get mapped to C-m
-  ## Only option is M-enter, which is mapped to C-M-m. Default is newline, but not useful
-  ble-bind -m vi_imap -f 'C-M-m' 'accept-line'
-  ble-bind -m vi_nmap -f 'C-M-m' 'accept-line'
-  ble-bind -m vi_imap -f 'M-RET' 'accept-line'
-  ble-bind -m vi_nmap -f 'M-RET' 'accept-line'
 
 
   ## The default mapping of C-o is vi_imap/single-command-mode.  If you want to
@@ -1288,6 +1291,10 @@ function blerc/vim-load-hook {
   ## Readline), please use the following keybinding.
 
   #ble-bind -m vi_nmap -f 'C-r' history-isearch-backward
+
+  ## Navigate command history
+  ble-bind -m vi_imap -f 'C-p' 'history-prev'
+  ble-bind -m vi_imap -f 'C-n' 'history-next'
 
   #----------------------------------------------------------------------------
   # Cursor shapes and other terminal settings
