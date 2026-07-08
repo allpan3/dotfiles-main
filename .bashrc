@@ -464,35 +464,28 @@ typeset -g CHPWD_COMMAND=""
 PROMPT_COMMAND="_chpwd_hook${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 
 _zellij_update_tab_name() {
-  if [[ -n $ZELLIJ ]]; then
-    tab_name=''
-    # use --is-inside-work-tree instead of --git-dir so that non-worktree directories (like .git/) won't evalute to true
-    # this is needed beacuse the proceeding commands only work inside worktree
-    if [[ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" == "true" ]]; then
-      root=$(git rev-parse --show-toplevel)
-      # since my home directory is a repo, also need to handle the shortening here
-      if [[ $root == $HOME ]]; then
-        tab_name+="~/"
-      else
-        tab_name+=$(basename "$(git rev-parse --show-toplevel)")/
-      fi
-      # dir wrt git root
-      path=$(git rev-parse --show-prefix)
-      if [[ -n $path ]]; then
-        tab_name+=$(basename $path)
-      fi
-      tab_name=${tab_name%/}
+  [[ -n $ZELLIJ ]] || return
+  local tab_name=''
+  if [[ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" == "true" ]]; then
+    local root; root=$(git rev-parse --show-toplevel)
+    if [[ $root == $HOME ]]; then
+      tab_name+="~/"
     else
-      tab_name=$PWD
-      if [[ $tab_name == $HOME ]]; then
-        tab_name="~"
-      # don't strip off / if the pwd is /
-      elif [[ $tab_name != "/" ]]; then
-        tab_name=${tab_name##*/}
-      fi
+      tab_name+="$(basename "$root")/"
     fi
-    command nohup zellij action rename-tab $tab_name >/dev/null 2>&1
+    local path; path=$(git rev-parse --show-prefix)
+    [[ -n $path ]] && tab_name+=$(basename "$path")
+    tab_name=${tab_name%/}
+  else
+    tab_name=$PWD
+    if [[ $tab_name == $HOME ]]; then
+      tab_name="~"
+    elif [[ $tab_name != "/" ]]; then
+      tab_name=${tab_name##*/}
+    fi
   fi
+
+  command nohup zellij action rename-tab "$tab_name" >/dev/null 2>&1
 }
 
 _zellij_update_tab_name
