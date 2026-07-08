@@ -431,19 +431,124 @@ mr() {
 
 # Accidental action prevention
 if [ "$(uname -s)" == "Darwin" ]; then
+  # Move rm targets to the macOS trash while accepting common rm flags
   trash() {
-    if [ "$#" -eq 0 ]; then
+    local force=0
+    local interactive=0
+    local verbose=0
+    local status=0
+    local operands=()
+    local arg opt file dest base timestamp counter reply
+
+    while [ "$#" -gt 0 ]; do
+      arg="$1"
+      shift
+
+      case "$arg" in
+        --)
+          operands+=("$@")
+          break
+          ;;
+        --force)
+          force=1
+          interactive=0
+          ;;
+        --interactive)
+          interactive=1
+          force=0
+          ;;
+        --recursive)
+          ;;
+        --verbose)
+          verbose=1
+          ;;
+        --dir)
+          ;;
+        --*)
+          echo "rm: illegal option -- ${arg#--}"
+          return 1
+          ;;
+        -[!-]*)
+          local i
+          for ((i = 1; i < ${#arg}; i++)); do
+            opt="${arg:i:1}"
+            case "$opt" in
+              f)
+                force=1
+                interactive=0
+                ;;
+              i)
+                interactive=1
+                force=0
+                ;;
+              r|R|d|P|W)
+                ;;
+              v)
+                verbose=1
+                ;;
+              *)
+                echo "rm: illegal option -- $opt"
+                return 1
+                ;;
+            esac
+          done
+          ;;
+        *)
+          operands+=("$arg")
+          ;;
+      esac
+    done
+
+    if [ "${#operands[@]}" -eq 0 ]; then
+      if [ "$force" -eq 1 ]; then
+        return 0
+      fi
       echo "rm: missing operand"
       return 1
     fi
-    for file in "$@"; do
-      if [ -e "$file" ]; then
-        # Move the file to the trash directory with a timestamp to avoid collisions
-        mv "$file" "$HOME/.Trash/$(date +%Y%m%d%H%M%S)_$(basename "$file")"
+
+    for file in "${operands[@]}"; do
+      if [ -e "$file" ] || [ -L "$file" ]; then
+        if [ "$interactive" -eq 1 ]; then
+          read -r -p "remove '$file'? " reply
+          case "$reply" in
+            [yY]|[yY][eE][sS])
+              ;;
+            *)
+              continue
+              ;;
+          esac
+        fi
+
+        timestamp="$(date +%Y%m%d%H%M%S)"
+        base="$(basename "$file")"
+        dest="$HOME/.Trash/${timestamp}_${base}"
+        counter=1
+
+        while [ -e "$dest" ] || [ -L "$dest" ]; do
+          dest="$HOME/.Trash/${timestamp}_${counter}_${base}"
+          counter=$((counter + 1))
+        done
+
+        if command mv -- "$file" "$dest"; then
+          :
+        else
+          status=1
+          continue
+        fi
+
+        if [ "$verbose" -eq 1 ]; then
+          echo "$file -> $dest"
+        fi
       else
-        echo "rm: cannot remove '$file': No such file or directory"
+        if [ "$force" -ne 1 ]; then
+          echo "rm: cannot remove '$file': No such file or directory"
+          status=1
+        fi
       fi
     done
+
+    return "$status"
   }
   alias rm='trash'
 elif [[ "$USER" == "root" ]]; then
