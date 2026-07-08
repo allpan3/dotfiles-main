@@ -360,7 +360,27 @@ function git-ignore() {
 }
 
 # lazygit
-alias lg=lazygit
+lg() {
+  local gd wt
+
+  if [ -n "${GIT_DIR:-}" ] &&
+    gd="$(git rev-parse --absolute-git-dir 2>/dev/null)" &&
+    wt="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+    if [ "$(git config --bool --get vcsh.vcsh 2>/dev/null)" = true ]; then
+      GIT_DIR="$gd" GIT_WORK_TREE="$wt" \
+        GIT_CONFIG_COUNT=2 \
+        GIT_CONFIG_KEY_0=status.relativePaths \
+        GIT_CONFIG_VALUE_0=false \
+        GIT_CONFIG_KEY_1=status.showUntrackedFiles \
+        GIT_CONFIG_VALUE_1=no \
+        lazygit --git-dir="$gd" --work-tree="$wt" "$@"
+    else
+      GIT_DIR="$gd" GIT_WORK_TREE="$wt" lazygit --git-dir="$gd" --work-tree="$wt" "$@"
+    fi
+  else
+    lazygit "$@"
+  fi
+}
 
 # vcsh and myrepos
 _vcsh_repo_name() {
