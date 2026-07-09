@@ -663,7 +663,7 @@ bleopt default_keymap=vi
 
 #ble-face auto_complete='fg=238,bg=254'           # default
 #ble-face auto_complete='fg=231,bg=69'            # blue background
-ble-face auto_complete='fg=241,italic' # darker background
+ble-face auto_complete='fg=241,italic'            # darker background
 
 
 ## The setting "complete_auto_wordbreaks" is used as the delimiters for
@@ -1159,8 +1159,8 @@ function blerc/emacs-load-hook {
   ble-bind -f 's-S-right' '@marked end-of-line'
 
   ## Navigate command hitory
-  ble-bind -f 'C-p' 'history-prev'
-  ble-bind -f 'C-n' 'history-next'
+  ble-bind -m emacs -f 'C-p' 'history-prev'
+  ble-bind -m emacs -f 'C-n' 'history-next'
 
   return 0
 }
@@ -1295,6 +1295,8 @@ function blerc/vim-load-hook {
   ## Navigate command history
   ble-bind -m vi_imap -f 'C-p' 'history-prev'
   ble-bind -m vi_imap -f 'C-n' 'history-next'
+  ble-bind -m vi_nmap -f 'C-p' 'vi-command/history-prev'
+  ble-bind -m vi_nmap -f 'C-n' 'vi-command/history-next'
 
   #----------------------------------------------------------------------------
   # Cursor shapes and other terminal settings
