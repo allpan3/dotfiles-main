@@ -221,9 +221,8 @@ fi
 
 # ls - use eza if available
 if command -v eza &>/dev/null; then
-  unalias ls 2>/dev/null
   # Use eza for ls with terminal-only hyperlink flag
-  ls() {
+  function ls {
     local -a eza_args
     eza_args=(-F --icons=auto --color=auto)
 
@@ -232,7 +231,7 @@ if command -v eza &>/dev/null; then
     fi
 
     command eza "${eza_args[@]}" "$@"
-  }
+  } 
   alias la='ls -a'
   alias ld='ls -d'
   alias lda='la -d'
