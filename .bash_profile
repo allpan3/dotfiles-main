@@ -1,9 +1,14 @@
-# Login shell initialization
+# ~/.bash_profile: sourced by Bash login shells
+# Loads shared environment state and interactive setup when appropriate
 
-# Initialize for non-login shell
-if [ -n "$BASH_VERSION" ]; then
-    if [ -f "$HOME/.bashrc" ]; then
-        . "$HOME/.bashrc"
-    fi
+if [ -r "$HOME/.profile" ]; then
+  . "$HOME/.profile"
 fi
 
+case $- in
+  *i*)
+    if [ -r "$HOME/.bashrc" ]; then
+      . "$HOME/.bashrc"
+    fi
+    ;;
+esac

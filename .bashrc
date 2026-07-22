@@ -1,8 +1,11 @@
-## ~/.bashrc: executed by bash(1) for non-login shells.
-### This file is shared between systems. Put any localized features in .bashrc_local
+# ~/.bashrc: sourced by interactive non-login Bash shells and ~/.bash_profile
+# Shared between systems; machine-specific interactive setup belongs in ~/.bashrc_local
 
-# If not running interactively, don't do anything
-# This is typically already handled by /etc/bash.bashrc file
+if [ -z "${BASH_ENV_LOADED:-}" ] && [ -r "$HOME/.bash_env" ]; then
+  . "$HOME/.bash_env"
+fi
+
+# Stop after shared environment setup when Bash reads this file non-interactively
 case $- in
 *i*) ;;
 *) return ;;
@@ -35,16 +38,19 @@ shopt -s checkwinsize
 # This option expands variables in the path when typing <TAB>.
 # This is still not ideal, but it fixes the issue where the $ sign
 # proceeding the variable in a path won't be escaped when <TAB> is typed
-shopt -s direxpand
-
-# Correct minor errors in cd directory spelling
-shopt -s cdspell
-# If a directory name is given as a command name, it is cd'd
-shopt -s autocd
-# Spelling correction on directory names during word completion if the directory name initially supplied does not exist
-shopt -s dirspell
+if ((BASH_VERSINFO[0] >= 4)); then
+  shopt -s direxpand
+  # Correct minor errors in cd directory spelling
+  shopt -s cdspell
+  # If a directory name is given as a command name, it is cd'd
+  shopt -s autocd
+  # Correct directory names during word completion
+  shopt -s dirspell
+fi
 # Bash 5+ native alias-aware programmable completion
-shopt -s progcomp_alias 2>/dev/null || true
+if ((BASH_VERSINFO[0] >= 5)); then
+  shopt -s progcomp_alias
+fi
 # Don't check mail when opening terminal.
 unset MAILCHECK
 
@@ -108,34 +114,10 @@ export "${!LESS_TERMCAP@}"
 export LESS="R${LESS#-}"
 export GROFF_NO_SGR=1
 
-###############################
-# PATH Setup
-###############################
-# Set up homebrew paths if exists
-# Manual setup is faster than `eval "$(homebrew/bin/brew shellenv)"`
-if [[ -f /opt/homebrew/bin/brew && -z $HOMEBREW_PREFIX ]]; then
-  export HOMEBREW_PREFIX="/opt/homebrew"
-  export HOMEBREW_CELLAR="$HOMEBREW_PREFIX/Cellar"
-  PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
-  INFOPATH="${HOMEBREW_PREFIX}/share/info:${INFOPATH:-}"
-fi
-
-## Local executable paths
-[[ ":$PATH:" =~ ":${HOME}/.local/bin:" ]] || PATH="${HOME}/.local/bin:$PATH" # installed from source
-[[ ":$LD_LIBRARY_PATH:" =~ ":${HOME}/.local/lib:" ]] || LD_LIBRARY_PATH="${HOME}/.local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-[[ ":$MANPATH:" =~ ":${HOME}/.local/man:" ]] || MANPATH=":${HOME}/.local/share/man${MANPATH:+$MATHPATH}"
-[[ ":$PATH:" =~ ":${HOME}/.cargo/bin:" ]] || PATH="${HOME}/.cargo/bin:$PATH" # rustup
-export PATH LD_LIBRARY_PATH MANPATH INFOPATH
-
 ## Conda
 CONDA_HOME=${HOME}/.conda
 # This is effectively `conda init`
 [[ -e "${CONDA_HOME}" ]] && . "${CONDA_HOME}/etc/profile.d/conda.sh"
-
-# Set up config home for macOS
-if [ "$(uname -s)" == "Darwin" ]; then
-  export XDG_CONFIG_HOME=${HOME}/.config
-fi
 
 ###############################
 # Load Local rc
@@ -211,8 +193,10 @@ fi
 # Set up function for completion for aliases
 # Place this after all command and default complete are sourced
 # Use auto unmask to record the default completion
-export COMPAL_AUTO_UNMASK=1
-source ${HOME}/.scripts/complete-alias.sh
+if ((BASH_VERSINFO[0] >= 4)); then
+  export COMPAL_AUTO_UNMASK=1
+  source ${HOME}/.scripts/complete-alias.sh
+fi
 
 # emulate tree if it's not installed
 if ! type tree &>/dev/null; then
@@ -286,7 +270,6 @@ fi
 
 if command -v nvim &>/dev/null; then
   alias vi='nvim'
-  export EDITOR='nvim'
 fi
 
 if command -v zellij --version &>/dev/null; then
@@ -558,7 +541,7 @@ fi
 
 # Make completion work for aliases
 # This conflicts with blesh, which automatically handles alias completion
-if [[ -z ${BLE_VERSION-} ]]; then
+if ((BASH_VERSINFO[0] >= 4)) && [[ -z ${BLE_VERSION-} ]]; then
   complete -F _complete_alias "${!BASH_ALIASES[@]}"
 fi
 
@@ -583,7 +566,7 @@ _chpwd_hook() {
 }
 
 # create a PROPMT_COMMAND equivalent to store chpwd functions
-typeset -g CHPWD_COMMAND=""
+CHPWD_COMMAND=""
 # add `;` after _chpwd_hook if PROMPT_COMMAND is not empty
 PROMPT_COMMAND="_chpwd_hook${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 
