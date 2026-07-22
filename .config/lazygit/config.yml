@@ -11,6 +11,7 @@ git:
   pagers:
     - colorArg: always
       pager: delta --paging=never
+promptToReturnFromSubprocess: false
 gui:
   theme:
     selectedLineBgColor:
