@@ -84,6 +84,8 @@
   ; pager=ov -F --section-delimiter '^commit' --section-header-num 4 --section-start -1
 [diff]
   colorMoved = default
+[pull]
+  rebase = true
 [merge]
   tool = diffview
   conflictstyle = diff3
