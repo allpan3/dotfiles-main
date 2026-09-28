@@ -603,6 +603,13 @@ _zellij_update_tab_name() {
 
 _zellij_update_tab_name
 
+# Load this after Starship and _chpwd_hook, which change PROMPT_COMMAND.
+# Load it before ble-attach so ble-attach stays the last startup command.
+# Mark prompts for Zellij in Bash processes started inside Ghostty.
+if [[ -n ${ZELLIJ-} && -n ${GHOSTTY_RESOURCES_DIR-} && -r ${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash ]]; then
+  source "${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash"
+fi
+
 # This needs to be placed at the end according to the documentation
 if [[ ${BLE_VERSION-} ]]; then
   # ble/debug/profiler/start
