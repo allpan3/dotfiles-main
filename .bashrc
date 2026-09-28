@@ -570,8 +570,9 @@ CHPWD_COMMAND=""
 # add `;` after _chpwd_hook if PROMPT_COMMAND is not empty
 PROMPT_COMMAND="_chpwd_hook${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 
+# Rename the containing Zellij tab from the shell's working tree
 _zellij_update_tab_name() {
-  [[ -n $ZELLIJ ]] || return
+  [[ -n ${ZELLIJ-} && -n ${ZELLIJ_PANE_ID-} ]] || return
   local tab_name=''
   if [[ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" == "true" ]]; then
     local root; root=$(git rev-parse --show-toplevel)
@@ -592,11 +593,15 @@ _zellij_update_tab_name() {
     fi
   fi
 
-  command nohup zellij action rename-tab "$tab_name" >/dev/null 2>&1
+  local tab_id
+  tab_id=$(command zellij action list-panes --json 2>/dev/null |
+    /usr/bin/jq -r --arg pane_id "$ZELLIJ_PANE_ID" \
+      'first(.[] | select(.is_plugin == false and (.id | tostring) == $pane_id) | .tab_id) // empty')
+  [[ -n $tab_id ]] || return
+  command zellij action rename-tab --tab-id "$tab_id" "$tab_name" >/dev/null 2>&1
 }
 
 _zellij_update_tab_name
-# CHPWD_COMMAND=${CHPWD_COMMAND:+$CHPWD_COMMAND;}_zellij_update_tab_name
 
 # This needs to be placed at the end according to the documentation
 if [[ ${BLE_VERSION-} ]]; then
