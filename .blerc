@@ -599,7 +599,7 @@ bleopt default_keymap=vi
 ## Bracketed Paste Mode (DEC mode 2004) is enabled.  This setting is
 ## synchronized with the readline variable "enable-bracketed-paste".
 
-#bleopt term_bracketed_paste_mode=on
+bleopt term_bracketed_paste_mode=on
 
 ##-----------------------------------------------------------------------------
 ## Settings for completion
