@@ -14,11 +14,14 @@ keybinds clear-defaults=true {
     // panes
     bind "n" { NewPane; SwitchToMode "normal"; }
     bind "p" { TogglePaneFrames; SwitchToMode "normal"; }
-    bind "m" { ToggleFocusFullscreen; SwitchToMode "normal"; } // zoom
+    bind "m" { ToggleFocusFullscreen; SwitchToMode "normal"; } // maximize
+    bind "Enter" { ToggleFocusNoUiFullscreen; SwitchToMode "normal"; } // maximize and hide all UI
     bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
     bind "c" { Clear; SwitchToMode "normal";}
     bind "]" { NextSwapLayout; }
     bind "[" { PreviousSwapLayout; }
+    bind "`" { FocusLastPane; SwitchToMode "normal"; } // previous focused pane
+
 
     // tabs
     bind "tab" { ToggleTab; SwitchToMode "normal"; }
@@ -47,6 +50,27 @@ keybinds clear-defaults=true {
     bind "=" "+" { Resize "Increase"; }
     bind "-" { Resize "Decrease"; }
 
+    // copy the last command output
+    bind "y" { CopyLastCommandOutput; SwitchToMode "normal"; }
+
+    // tool launchers
+    bind "o" {
+      Run "btop" { floating true; close_on_exit true; }
+      SwitchToMode "normal"
+    }
+    bind "i" {
+      Run "btop" { in_place true; close_on_exit true; } // restore original pane on exit
+      SwitchToMode "normal"
+    }
+    bind "b" {
+      LaunchOrFocusPlugin "strider" { floating true; move_to_focused_tab true; }
+      SwitchToMode "normal"
+    }
+    bind "B" {
+      LaunchPlugin "strider" { floating true; } // always a fresh file browser
+      SwitchToMode "normal"
+    }
+
   }
   normal {
     // uncomment this and adjust key if using copy_on_select=false
@@ -54,8 +78,6 @@ keybinds clear-defaults=true {
   }
   locked {
     bind "Alt z" { SwitchToMode "Normal"; }
-  }
-  shared {
   }
   // Keybindings directly accessible without leader key
   shared_except "tmux" {
@@ -143,11 +165,16 @@ keybinds clear-defaults=true {
     bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
     bind "r" { SwitchToMode "renamepane"; PaneNameInput 0;}
     bind "p" { TogglePanePinned; SwitchToMode "normal"; }
-    bind "tab" { SwitchFocus; }
     bind "h"  { SwitchToMode "resize"; Resize "Increase left"; }
     bind "j"  { SwitchToMode "resize"; Resize "Increase down"; }
     bind "k"  { SwitchToMode "resize"; Resize "Increase up"; }
     bind "l"  { SwitchToMode "resize"; Resize "Increase right"; }
+    bind "tab" { FocusNextPane; }
+    bind "Shift tab" { FocusPreviousPane; }
+
+    bind "1" { SetPaneFrameStyle "full"; SwitchToMode "normal"; }
+    bind "2" { SetPaneFrameStyle "titles"; SwitchToMode "normal"; }
+    bind "3" { SetPaneFrameStyle "none"; SwitchToMode "normal"; }
   }
   move {
     bind "n" { MovePane; } // move pane forward
@@ -177,6 +204,22 @@ keybinds clear-defaults=true {
     bind "l" "right" "down" "j" { GoToNextTab; }
     bind "d" { CloseTab; SwitchToMode "normal"; }
     bind "s" { ToggleActiveSyncTab; SwitchToMode "normal"; }
+
+    bind "o" {
+      OverrideLayout {
+        layout "default"
+        retain_existing_terminal_panes true
+        retain_existing_plugin_panes false
+        apply_only_to_active_tab true
+      }
+      SwitchToMode "normal"
+    }
+
+    // New tab with a predefined workspace
+    // bind "n" {
+    //   NewTab { layout "default"; cwd "/Users/allpan"; name "workspace"; } 
+    //   SwitchToMode "normal"
+    // }
   }
   shared_among "scroll" "search" {
     bind "Ctrl c" { ScrollToBottom; SwitchToMode "normal"; } // cancel
@@ -188,6 +231,14 @@ keybinds clear-defaults=true {
     bind "u" { HalfPageScrollUp; }
     bind "f" "right" { PageScrollDown; }
     bind "b" "left" { PageScrollUp; }
+    // Shell integration supplies prompt and command boundaries via OSC 133
+    bind "[" { ScrollToPreviousPrompt; }
+    bind "]" { ScrollToNextPrompt; }
+    bind "m" { SelectCommandAtScrollPosition; }
+    bind "y" { Copy; } // copy the selection
+    bind "Y" { SelectCommandAtScrollPosition; Copy; } // select-and-copy
+    // save the viewport to a fixed file
+    bind "D" { DumpScreen "/tmp/zellij-pane.txt"; } // overwrites this file; viewport only
   }
   scroll {
     bind "e" { EditScrollback; SwitchToMode "normal"; }
@@ -219,6 +270,34 @@ keybinds clear-defaults=true {
   session {
     bind "q" { Detach; }
     bind "D" { Quit; }    // basically "delete session"
+    bind "]" { FocusHostSession; SwitchToMode "normal"; } // outer session
+    bind "[" { FocusGuestSession; SwitchToMode "normal"; } // nested session
+    bind "f" { ToggleHostFullscreen; SwitchToMode "normal"; }
+
+    // appearance controls need theme_dark/theme_light for distinct palettes
+    bind "t" { ToggleTheme; SwitchToMode "normal"; }
+    bind "1" { SetDarkTheme; SwitchToMode "normal"; }
+    bind "2" { SetLightTheme; SwitchToMode "normal"; }
+
+    bind "r" {
+      Run "/bin/bash" "/Users/allpan/.config/zellij/rename-session.sh" {
+        floating true
+        x "35%"
+        y "45%"
+        width "35%"
+        height "6%"
+        close_on_exit true
+        name "Rename session"
+      }
+      SwitchToMode "normal"
+    }
+
+    // hotkey to jump to a predefined session
+    // bind "j" {
+    //   SwitchSession { name "example"; } // fixed destination
+    //   SwitchToMode "normal"
+    // }
+
     bind "w" {
       LaunchOrFocusPlugin "session-manager" {
         floating true
@@ -226,6 +305,7 @@ keybinds clear-defaults=true {
       };
       SwitchToMode "normal"
     }
+
     bind "c" {
       LaunchOrFocusPlugin "configuration" {
         floating true
@@ -233,6 +313,7 @@ keybinds clear-defaults=true {
       }
       SwitchToMode "normal"
     }
+
     bind "p" {
       LaunchOrFocusPlugin "plugin-manager" {
         floating true
@@ -240,6 +321,7 @@ keybinds clear-defaults=true {
       }
       SwitchToMode "normal"
     }
+
     bind "a" {
       LaunchOrFocusPlugin "zellij:about" {
         floating true
@@ -247,6 +329,7 @@ keybinds clear-defaults=true {
       };
       SwitchToMode "normal"
     }
+
     bind "s" {
         LaunchOrFocusPlugin "zellij:share" {
             floating true
@@ -254,6 +337,7 @@ keybinds clear-defaults=true {
         };
         SwitchToMode "normal"
     }
+
     bind "l" {
       LaunchOrFocusPlugin "layout-manager" {
         floating true
