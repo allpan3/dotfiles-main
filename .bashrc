@@ -172,8 +172,8 @@ if command -v fzf &>/dev/null && [[ -z ${BLE_VERSION-} ]]; then
 fi
 
 # dircolors
-if command -v dircolors &>/dev/null; then
-  eval "$(dircolors -b ${HOME}/.config/dircolors)"
+if command -v dircolors &>/dev/null && [[ -f "${HOME}/.config/dircolors" ]]; then
+  eval "$(dircolors -b "${HOME}/.config/dircolors")"
 fi
 
 # direnv
