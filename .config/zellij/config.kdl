@@ -306,10 +306,14 @@ load_plugins {
 // Default: default
 // 
 theme "dracula"
-// react to terminal light/dark theme changes without
-// changing the look of this custom dark zjstatus layout unexpectedly.
+// Set both themes to follow the terminal's dark or light appearance
+// If either theme is not set, theme "dracula" stays in use
 // theme_dark "dracula"
 // theme_light "dayfox"
+
+// Set a fixed dark or light appearance when both themes are set
+// Options: dark, light; if not set, the terminal selects the appearance
+// explicit_theme_hue "dark"
 
 // Choose the base input mode of zellij.
 // Default: normal
@@ -320,7 +324,7 @@ theme "dracula"
 // Default: $SHELL
 // 
 // default_shell "fish"
- 
+
 // Choose the path to override cwd that zellij will use for opening new panes
 //
 // default_cwd ""
@@ -357,6 +361,10 @@ theme "dracula"
 //   - false
 //
 // pane_frames false
+
+// Pane frame style when pane_frames is enabled
+// Options: titles (default), full, none (equivalent to pane_frames false)
+// pane_frame_style "titles"
  
 // When attaching to an existing session with other users,
 // should the session be mirrored (true)
@@ -374,6 +382,11 @@ theme "dracula"
 //   - quit
 // 
 // on_force_close "quit"
+
+// How to handle a nested Zellij session when its pane gains focus
+// Zellij also detects nested sessions over SSH
+// Options: ask (default), fullscreen, descend, never
+// nested_session_handling "ask"
  
 // Configure the scroll back buffer size
 // This is the number of lines zellij stores for each pane in the scroll back
@@ -440,6 +453,8 @@ theme "dracula"
 // Options:
 //   - true (default)
 //   - false
+//
+// session_serialization false
  
 // Whether pane viewports are serialized along with the session, default is false
 // (Requires restart)
@@ -480,21 +495,54 @@ theme "dracula"
 // 
 // support_kitty_keyboard_protocol false
 
+// Enable images through the Kitty Graphics Protocol when the host terminal supports it
+// Default: true if supported (requires restart)
+// support_kitty_graphics_protocol false
+
+// Let programs in any pane, including remote SSH programs, read the clipboard via OSC 52
+// Default: false; enabling this allows reads without asking
+// dangerously_enable_paste_buffer_read true
+
 // Whether to stack panes when resizing beyond a certain size
 // Default: true
 //
 // stacked_resize false
+
+// Display stacked panes as a list with the expanded pane pinned to the bottom
+// Default: true
+// stacked_pane_list false
 
 // Whether to enable mouse hover effects, multiple-select pane grouping, and mouse resizing.
 // Default: true
 //
 // advanced_mouse_actions false
 
+// Resize panes with Ctrl+ScrollWheel
+// Default: true
+// mouse_scroll_resize false
+
+// Scrolling a pane enters Scroll mode; reaching the bottom exits Scroll mode
+// Default: true
+// Set false to keep the current input mode while scrolling
+// scroll_mode_sync false
+
 // Whether to show pane-frame hover highlights and resize help text while keeping
 // advanced mouse actions enabled.
 // Default: true
 //
 // mouse_hover_effects false
+
+// Show mouse hover help text for resizing and pane grouping
+// Default: true
+// mouse_hover_tips false
+
+// Triple-click selects a command and its output using shell OSC 133 markers
+// Default: true
+// osc133_command_selection false
+
+// Word separators for double-click selection; whitespace always separates words
+// Default: "[]{}<>()"
+// word_separators "[]{}<>()"
 
 // Whether to output OSC8 hyperlink sequences for clickable links.
 // Default: true
@@ -596,6 +644,10 @@ theme "dracula"
 // (Requires restart)
 //
 // web_server_port 8082
+
+// Async workers per web client; 0 uses the physical CPU core count
+// Small values around 4 typically work best
+// client_async_worker_tasks 4
 
 web_client {
     font "monospace"
