@@ -33,8 +33,8 @@ FZF_CTRL_T_OPTS="--walker-skip .git,node_modules,target \
       --bind 'alt-s:jump'"
 
 if type fd &>/dev/null; then
-  FZF_CTRL_T_OPTS+=" --bind 'ctrl-t:reload(eval \"fd $FD_DEFUALT_OPTS --type f --ignore\")' \
-                     --bind 'ctrl-i:reload(eval \"fd $FD_DEFUALT_OPTS --ignore\")'"
+  FZF_CTRL_T_OPTS+=" --bind 'ctrl-t:reload(eval \"fd $FD_DEFAULT_OPTS --type f --ignore\")' \
+                     --bind 'ctrl-i:reload(eval \"fd $FD_DEFAULT_OPTS --ignore\")'"
 fi
 
 # FZF CD WIDGET
@@ -47,7 +47,7 @@ if type tree &>/dev/null && type fd &>/dev/null; then
         --bind 'focus:transform-preview-label:[[ -n {} ]] && printf \" Previewing [%s] \" {}' \
         --bind 'ctrl-/:toggle-preview' \
         --bind 'alt-/:toggle-preview-wrap' \
-        --bind 'ctrl-i:reload(eval \"fd $FD_DEFUALT_OPTS --type d --ignore\")'"
+        --bind 'ctrl-i:reload(eval \"fd $FD_DEFAULT_OPTS --type d --ignore\")'"
 fi
 
 # FZF HISTORY WIDGET
@@ -153,8 +153,8 @@ if type fd &>/dev/null; then
         --bind 'alt-s:jump' \
         --bind 'ctrl-/:toggle-preview' \
         --bind 'alt-/:toggle-preview-wrap' \
-        --bind 'ctrl-i:reload(echo .; eval \"fd $FD_DEFUALT_OPTS --ignore --type d --base-directory $repo_root . \")' \
-        --bind 'ctrl-o:reload(echo $cur_rel_path ;eval \"fd $FD_DEFUALT_OPTS --type d --base-directory $repo_root --search-path $cur_rel_path . \")' \
+        --bind 'ctrl-i:reload(echo .; eval \"fd $FD_DEFAULT_OPTS --ignore --type d --base-directory $repo_root . \")' \
+        --bind 'ctrl-o:reload(echo $cur_rel_path ;eval \"fd $FD_DEFAULT_OPTS --type d --base-directory $repo_root --search-path $cur_rel_path . \")' \
         +m"
     )
 
