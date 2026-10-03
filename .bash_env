@@ -58,5 +58,9 @@ if command -v nvim >/dev/null 2>&1; then
   export EDITOR
 fi
 
+# Omarchy environment (OMARCHY_PATH + PATH), needed even for non-interactive shells
+[ -r /usr/share/omarchy/default/bash/env-bootstrap ] &&
+  . /usr/share/omarchy/default/bash/env-bootstrap
+
 BASH_ENV_LOADED=1
 export BASH_ENV_LOADED PATH MANPATH INFOPATH
