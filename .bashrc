@@ -144,11 +144,6 @@ fi
 # Executable Setup
 ###############################
 
-# zoxide
-if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init bash --cmd cd)"
-fi
-
 # starship
 if command -v starship &>/dev/null; then
   eval "$(starship init bash)"
@@ -181,11 +176,18 @@ if command -v direnv &>/dev/null; then
   eval "$(direnv hook bash)"
 fi
 
-## thefuck
-## thefuck startup is slow
-## if command -v fuck &>/dev/null; then
-##   eval $(thefuck --alias)
-## fi
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate bash)"
+fi
+
+# Initialize zoxide after mise, which also defines cd.
+# zoxide
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init bash --cmd cd)"
+fi
+
+# worktrunk
+if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init bash)"; fi
 
 ###############################
 # Aliases & Utility Functions
