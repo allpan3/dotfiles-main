@@ -145,7 +145,7 @@ fi
 ###############################
 
 # starship
-if command -v starship &>/dev/null; then
+if [[ ${TERM:-} != "dumb" ]] && command -v starship &> /dev/null; then
   eval "$(starship init bash)"
   function set_win_title(){
     echo -ne "\033]0; "$PWD" \007"
