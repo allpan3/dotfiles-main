@@ -8,9 +8,9 @@ keybinding:
   universal:
     createPatchOptionsMenu: <c-g> # default is <c-p>
 git:
-  pagers:
+  diffRenderers:
     - colorArg: always
-      pager: delta --paging=never
+      command: delta --paging=never
 promptToReturnFromSubprocess: false
 gui:
   theme:
