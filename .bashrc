@@ -135,7 +135,7 @@ fi
 if ! type -p starship &>/dev/null; then
   # git status in prompt
   test -e "${HOME}/.scripts/git-prompt.sh" && source "${HOME}/.scripts/git-prompt.sh"
-  export GIT_PS1_SHOWDIRTYSTATE="" # chipyard is slow with this
+  export GIT_PS1_SHOWDIRTYSTATE="" # large repos are slow with this
   RESTORE='\[\e[0m\]'
   export PS1="\[\e[0;44;30m\][\w]${RESTORE}\[\e[33m\]\$(__git_ps1 \"[\[\e[03m\]%s\[\e[23m\]]\")${RESTORE}\[\e[1;38;5;4m\] ⨕ ${RESTORE}"
 fi
@@ -333,89 +333,6 @@ function git-ignore() {
   fi
 }
 
-# git worktree
-
-wt_bare() { # Print the common git dir
-  if [ -d .bare ]; then
-    printf '%s/.bare\n' "$PWD"
-    return
-  fi
-
-  git rev-parse --path-format=absolute --git-common-dir 2>/dev/null
-}
-
-wt_git() { # Run git through the bare repo
-  local bare
-  bare=$(wt_bare) || return
-  git --git-dir="$bare" "$@"
-}
-
-
-
-wt_container() {
-  # Print the worktree parent dir
-  local bare
-  bare=$(wt_bare) || return
-  if [ "$(basename "$bare")" = ".bare" ]; then
-    dirname "$bare"
-  else
-    dirname "$(dirname "$bare")"
-  fi
-}
-
-wt_clone() {
-   # Clone bare and add first worktree
-  local url repo branch bare
-  url=$1
-  repo=${2:-$(basename "${url%.git}")}
-  branch=${3:-}
-
-  if [ -z "$url" ]; then
-    echo "usage: wt_clone <repo-url> [repo-dir] [branch]" >&2
-    return 2
-  fi
-
-  mkdir -p "$repo" || return
-  bare="$repo/.bare"
-
-  git clone --bare "$url" "$bare" || return
-  git --git-dir="$bare" config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
-  git --git-dir="$bare" fetch origin --prune || return
-
-  if [ -z "$branch" ]; then
-    branch=$(git --git-dir="$bare" symbolic-ref -q --short HEAD 2>/dev/null)
-    branch=${branch:-main}
-  fi
-
-  # make the branch name path safe
-  git --git-dir="$bare" worktree add "$repo/$(printf '%s\n' "$branch" | tr '/:@ ' '----')" "$branch"
-}
-
-
-wt_add() {
-  # Add a branch worktree
-  local branch base container target
-  branch=$1
-  base=${2:-HEAD}
-
-  if [ -z "$branch" ]; then
-    echo "usage: wt_add <branch> [base]" >&2
-    return 2
-  fi
-
-  container=$(wt_container) || return
-  target="$container/$(printf '%s\n' "$branch" | tr '/:@ ' '----')"
-
-  if wt_git show-ref --verify --quiet "refs/heads/$branch"; then
-    wt_git worktree add "$target" "$branch"
-  elif wt_git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
-    wt_git worktree add --track -b "$branch" "$target" "origin/$branch"
-  else
-    wt_git worktree add -b "$branch" "$target" "$base"
-  fi
-}
-
-
 # lazygit
 lg() {
   local gd wt
@@ -477,7 +394,7 @@ fi
 
 _mr_divider() {
   perl -pe '
-    s/^(mr [^:]+: .*)$/\n\e[1;33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n$1\e[0m/;
+    s/^(mr [^:]+: .*)$/\n\e[1;33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n$1\e[0m/;
     s/^(mr [^:]+: finished.*)$/\n\e[1;32m$1\e[0m/;
   '
 }
