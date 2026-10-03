@@ -4,6 +4,10 @@ font-feature = -calt
 font-feature = -clig
 font-feature = -liga
 
+## Shell integration
+# Let the shell set the title at each prompt instead of Ghostty
+shell-integration-features = no-title
+
 # Load whichever platform file exits
 config-file = ?linux.conf
 config-file = ?macos.conf
