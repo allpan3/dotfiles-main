@@ -55,6 +55,7 @@ fi
 
 if command -v nvim >/dev/null 2>&1; then
   export EDITOR=nvim
+  export VISUAL=nvim
 fi
 
 # Omarchy environment (OMARCHY_PATH + PATH), needed even for non-interactive shells
