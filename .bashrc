@@ -17,6 +17,26 @@ esac
 # Set up bash line editor, must be at the top per documentation
 test -f ${HOME}/.local/share/blesh/ble.sh && source ${HOME}/.local/share/blesh/ble.sh --attach=none
 
+# Remove the title writer that the system bashrc adds (if any); _set_title below sets the title.
+# Run this before other lines change PROMPT_COMMAND. At this point, the system title
+# command is a separate array element, so the loop removes it and no other command.
+_pc=()
+for _c in "${PROMPT_COMMAND[@]}"; do
+  [[ $_c == *"\\033]0;"* || $_c == *"\\033_"* ]] || _pc+=("$_c")
+done
+PROMPT_COMMAND=("${_pc[@]}")
+unset _pc _c
+
+# Set the window title to the current directory before each prompt.
+# Add user@host only in SSH sessions.
+_set_title() {
+  local status=$?
+  printf '\033]2;%s\007' "${SSH_CONNECTION:+$USER@${HOSTNAME%%.*}:}${PWD/#$HOME/\~}"
+  return $status
+}
+# Use the string form: Bash before 5.1 runs only element 0 of PROMPT_COMMAND
+PROMPT_COMMAND="_set_title${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+
 ###############################
 # Options
 ###############################
@@ -147,10 +167,10 @@ fi
 # starship
 if [[ ${TERM:-} != "dumb" ]] && command -v starship &> /dev/null; then
   eval "$(starship init bash)"
-  function set_win_title(){
-    echo -ne "\033]0; "$PWD" \007"
-  }
-  starship_precmd_user_func="set_win_title"
+  # function set_win_title(){
+  #   echo -ne "\033]0; "$PWD" \007"
+  # }
+  # starship_precmd_user_func="set_win_title"
 fi
 
 # atuin
