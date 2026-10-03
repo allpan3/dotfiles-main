@@ -4,9 +4,6 @@ font-feature = -calt
 font-feature = -clig
 font-feature = -liga
 
-## Functions
-copy-on-select = clipboard
-
 # Load whichever platform file exits
 config-file = ?linux.conf
 config-file = ?macos.conf
