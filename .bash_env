@@ -1,10 +1,6 @@
 # ~/.bash_env: sourced once by login and interactive shell startup files
 # Keep this file portable, fast, and limited to exported environment state
 
-if [ "${BASH_ENV_LOADED:-}" = 1 ]; then
-  return 0 2>/dev/null || exit 0
-fi
-
 # Configure Homebrew paths for macOS and Linuxbrew
 if [ -z "${HOMEBREW_PREFIX:-}" ]; then
   for _bash_env_brew_prefix in /opt/homebrew /home/linuxbrew/.linuxbrew; do
