@@ -227,7 +227,7 @@ fi
 
 # ls - use eza if available
 if command -v eza &>/dev/null; then
-  alias ls='eza -F --icons=auto --color=auto --hyperlink=auto'
+  alias ls='eza -F --icons=never --color=auto --hyperlink=auto'
   alias la='ls -a'
   alias ld='ls -d'
   alias lda='la -d'
